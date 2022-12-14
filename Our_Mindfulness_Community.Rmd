@@ -1,5 +1,6 @@
 ---
 title: "Our Mindfulness Community"
+subtitle: "A Passion Project"
 author: "Carey Huh, Ph.D."
 date: "`r Sys.Date()`"
 output: html_document
@@ -16,27 +17,33 @@ library(viridis)
 source('theme_carey.R')
 ```
 
-## Project Background
+## Background
 
-* Susan Samueli Integrative Health Institute has graciously offered the UCI and the community opportunities to practice mindful meditatations for two years now
+* Susan Samueli Integrative Health Institute has graciously offered UCI and the greater community opportunities to practice mindfulness for roughly two years
 
-* My name is Carey Huh and I worked at UCI as a neuroscientist for over 5 years
+* My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022
 
-* My mindfulness journey began with a free MBSR course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic
+* My mindfulness journey began with a free Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic
 
-* Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for wellbeing classes 
+* Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for wellbeing classes
+
+* The pandemic years have been a difficult, and deeply isolating, time for many of us 
+
+* The community practices have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others
+
+* They certainly have been a lifesaver for my mental and physical wellbeing!
 
 * In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle
 
-* The consistent mindfulness practices and self-compassion teachings helped to completely transform my outlook on life!
+* Consistent mindfulness practices and self-compassion teachings helped to completely transform my life!
 
-* I changed my career to a data scientist working for the CDC Foundation
-
-* A career that allows me to work from home means that I can stay connected to the UCI mindfulness community that I have grown to love and cherish
+* I changed my career and became a data scientist working in the public health sector
 
 ## Project Motivation
 
-* As a passion project, I have been monitoring attendance at SSIHI mindfulness community classes since April of 2021
+* As a data scientist, I have been curious about how the mindfulness community has evolved over time 
+ 
+* To gather data for this passion project, I have been monitoring attendance at SSIHI mindfulness community classes since April of 2021
 
 * This attendance data only contain aggregated summary statistics and the anonymity of participants is strictly protected
 
@@ -70,17 +77,18 @@ other <- df %>%
 free_meditation %>%
   group_by(Date_Monday) %>%
   summarise(attend = as.integer(mean(Participants_Include_Instructor))) %>%
-  ggplot(aes(x = Date_Monday, y = attend)) +
+  ggplot(aes(x = as.Date(Date_Monday), y = attend)) +
   geom_col(aes(fill = as.factor(quarter(Date_Monday))), color = "black") +
-  scale_fill_viridis(discrete = TRUE) +
-  theme_gray() +
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%Y-%b") +
   labs(
     title = "Attendance at Community Meditation Has Been Consistent Over Time",
     tag = "Figure 1",
-    x = "",
+    x = "Date",
     y = "Number of Participants Per Class",
-    caption = "Each bar represents a weekly average statistic",
-    fill = "Quarter")
+    caption = "Each bar represents a weekly average based on classes attended by the author",
+    fill = "Quarter") +
+  theme_gray()
 ```
 
 

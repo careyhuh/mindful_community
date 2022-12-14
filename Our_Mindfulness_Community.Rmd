@@ -8,6 +8,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
 
 library(tidyverse)
 library(readxl)
@@ -19,19 +21,19 @@ source('theme_carey.R')
 
 ## Background
 
-* Susan Samueli Integrative Health Institute has graciously offered UCI and the greater community opportunities to practice mindfulness for roughly two years
+* Susan Samueli Integrative Health Institute has graciously offered UCI and the greater community daily opportunities to practice mindfulness for roughly two years
 
 * My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022
 
-* My mindfulness journey began with a free Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic
+* My mindfulness journey began with a free virtual Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic
 
-* Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for wellbeing classes
+* Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for well-being classes
 
 * The pandemic years have been a difficult, and deeply isolating, time for many of us 
 
-* The community practices have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others
+* The community practices, albeit virtual, have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others
 
-* They certainly have been a lifesaver for my mental and physical wellbeing!
+* They certainly have been a lifesaver for my mental and physical well-being!
 
 * In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle
 
@@ -49,12 +51,15 @@ source('theme_carey.R')
 
 * Using the data I have collected, I wanted to take the opportunity to show how the community has stayed consistent in number throughout the length of the program
 
-* In particular, individual engagement during community meditation classes has steadily increased, indicating that individual participation and willingness to share in the sense of community has only grown stronger, not weaker, over time
+* Moreover, individual engagement during community meditation classes has always been relatively high despite virtual format
+
+* Surprisingly, the percentage of male participants has steadily increased over time, suggesting that our mindfulness community is evolving and increased participation from everyone is welcomed and encouraged
 
 ```{r import_data}
 df <- read_excel("mindful_database.xlsx") %>%
   mutate(Time_Start_24hr = substr(Time_Start_24hr, 12, 16),
-         Date_Monday = floor_date(Date, "weeks", week_start = 1)) %>%
+         Date_Monday = floor_date(Date, "weeks", week_start = 1),
+         Sharing_Participants = as.numeric(Sharing_Participants, na.omit = TRUE)) %>%
   select(Number, Date, Date_Monday, Day_Of_Week, everything())
 
 free_meditation <- df %>%
@@ -77,6 +82,7 @@ other <- df %>%
 free_meditation %>%
   group_by(Date_Monday) %>%
   summarise(attend = as.integer(mean(Participants_Include_Instructor))) %>%
+  # plot attendance
   ggplot(aes(x = as.Date(Date_Monday), y = attend)) +
   geom_col(aes(fill = as.factor(quarter(Date_Monday))), color = "black") +
   scale_fill_viridis(discrete = TRUE, direction = -1) +
@@ -84,12 +90,90 @@ free_meditation %>%
   labs(
     title = "Attendance at Community Meditation Has Been Consistent Over Time",
     tag = "Figure 1",
-    x = "Date",
+    x = "Date (Year-Month)",
     y = "Number of Participants Per Class",
     caption = "Each bar represents a weekly average based on classes attended by the author",
     fill = "Quarter") +
   theme_gray()
 ```
 
+* Figure 1 shows that the number of participants at community mediation classes has been consistent over time
+
+* The spike in attendance during the summer of 2021 (2021-Q3) is most likely due to the employee well-being program that temporarily allowed participation from employees of other UC campuses
+
+```{r meditation_camera}
+free_meditation %>%
+  mutate(On = Camera_On_Participants / Participants_Include_Instructor * 100,
+         Off = 100 - On) %>%
+  mutate(Year_Quarter = paste(year(Date), quarter(Date), sep = "-Q")) %>%
+  group_by(Year_Quarter) %>%
+  summarise(On = mean(On),
+            Off = 100 - On) %>%
+  pivot_longer(cols = c(On, Off)) %>%
+  # plot camera_on, camera_off
+  ggplot(aes(x = Year_Quarter, y = value)) +
+  geom_col(aes(fill = name), color = "black") +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(
+    title = "Percentage Participation with Camera On Remains High",
+    tag = "Figure 2",
+    x = "Date (Year-Quarter)",
+    y = "Percentage of Participants with Camera On vs. Off",
+    caption = "Each bar represents a quarterly average based on classes attended by the author",
+    fill = "Camera Status") +
+  theme_gray()
+```
+
+* Whether a participant has their camera on during a virtual mediation class may indicate greater engagement, comfort and willingness to share 
+
+```{r meditation_camera_on_percent}
+free_meditation %>%
+  mutate(On = Camera_On_Participants / Participants_Include_Instructor * 100) -> df_temp
+value <- as.integer(mean(df_temp$On), NA.omit = TRUE) 
+```
 
 
+* Figure 2 shows that the percentage of participation with camera on has remained relatively stable across time
+
+* The overall percentage of participation with camera on at community meditation classes is relatively high at `r value`%
+
+```{r meditation_gender}
+free_meditation %>%
+  mutate(Female = Female_Participants / Participants_Include_Instructor * 100,
+         Male = Male_Participants / Participants_Include_Instructor * 100,
+         Unknown = 100 - Female - Male) %>%
+  mutate(Year_Quarter = paste(year(Date), quarter(Date), sep = "-Q")) %>%
+  group_by(Year_Quarter) %>%
+  summarise(Female = mean(Female),
+            Male = mean(Male),
+            Unknown = 100 - Female - Male) %>%
+  pivot_longer(cols = c(Female, Male, Unknown)) %>%
+  mutate(name = as.factor(name)) -> df_temp
+df_temp$name <- fct_relevel(df_temp$name, levels = c("Unknown", "Male", "Female")) 
+df_temp %>%
+  # plot gender
+  ggplot(aes(x = Year_Quarter, y = value)) +
+  geom_col(aes(fill = name), color = "black") +
+  scale_fill_viridis(discrete = TRUE) +
+  labs(
+    title = "Male Participation at Community Meditation Has Steadily Increased",
+    tag = "Figure 3",
+    x = "Date (Year-Quarter)",
+    y = "Percentage of Participants",
+    caption = "Each bar represents a quarterly average based on classes attended by the author",
+    fill = "Gender") +
+  theme_gray()
+```
+
+* It is a well-known trend that community meditation classes attract more women than men
+
+```{r meditation_female_percent}
+free_meditation %>%
+  mutate(Female = Female_Participants / Participants_Include_Instructor * 100) -> df_temp
+value <- as.integer(mean(df_temp$Female), NA.omit = TRUE) 
+```
+
+
+* Figure 3 suggests that the percentage of male participants has been steadily increasing over time
+
+* The overall percentage of female participants is still relatively high at `r value`%

@@ -15,8 +15,11 @@ library(tidyverse)
 library(readxl)
 library(lubridate)
 library(viridis)
+library(googlesheets4)
 
 source('theme_carey.R')
+
+google_url <- "https://docs.google.com/spreadsheets/d/1RLOJXi2VQBOabrcT1qiLiyNO1k7eW8wm7E1Fze1NlRM/edit?usp=sharing"
 ```
 
 ## Background
@@ -56,11 +59,13 @@ source('theme_carey.R')
 * Surprisingly, the percentage of male participants has steadily increased over time, suggesting that our mindfulness community is evolving and increased participation from everyone is welcomed and encouraged
 
 ```{r import_data}
-df <- read_excel("mindful_database.xlsx") %>%
+df <- read_sheet(google_url) %>%
   mutate(Time_Start_24hr = substr(Time_Start_24hr, 12, 16),
          Date_Monday = floor_date(Date, "weeks", week_start = 1),
-         Sharing_Participants = as.numeric(Sharing_Participants, na.omit = TRUE)) %>%
+         Sharing_Participants = as.numeric(Sharing_Participants, na.omit = TRUE),
+         Day_Of_Week = as.factor(Day_Of_Week)) %>%
   select(Number, Date, Date_Monday, Day_Of_Week, everything())
+df$Day_Of_Week = fct_relevel(df$Day_Of_Week, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sunday"))
 
 free_meditation <- df %>%
   filter((Practice_Type == "Meditation") & (Cost == "Free"))
@@ -92,7 +97,7 @@ free_meditation %>%
     tag = "Figure 1",
     x = "Date (Year-Month)",
     y = "Number of Participants Per Class",
-    caption = "Each bar represents a weekly average based on classes attended by the author",
+    caption = "Each bar represents a weekly average based on classes attended by the author.",
     fill = "Quarter") +
   theme_gray()
 ```
@@ -118,8 +123,8 @@ free_meditation %>%
     title = "Percentage Participation with Camera On Remains High",
     tag = "Figure 2",
     x = "Date (Year-Quarter)",
-    y = "Percentage of Participants with Camera On vs. Off",
-    caption = "Each bar represents a quarterly average based on classes attended by the author",
+    y = "Percentage of Participants",
+    caption = "Each bar represents a quarterly average based on classes attended by the author.",
     fill = "Camera Status") +
   theme_gray()
 ```
@@ -139,41 +144,109 @@ value <- as.integer(mean(df_temp$On), NA.omit = TRUE)
 
 ```{r meditation_gender}
 free_meditation %>%
-  mutate(Female = Female_Participants / Participants_Include_Instructor * 100,
-         Male = Male_Participants / Participants_Include_Instructor * 100,
-         Unknown = 100 - Female - Male) %>%
+  mutate(female = Female_Participants / Participants_Include_Instructor * 100,
+         male = Male_Participants / Participants_Include_Instructor * 100,
+         unknown = 100 - female - male) %>%
   mutate(Year_Quarter = paste(year(Date), quarter(Date), sep = "-Q")) %>%
   group_by(Year_Quarter) %>%
-  summarise(Female = mean(Female),
-            Male = mean(Male),
-            Unknown = 100 - Female - Male) %>%
+  summarise(Female = mean(female),
+            Male = mean(male),
+            Unknown = 100 - Female - Male, 
+            Male_SEM = sd(male) / sqrt(n())) %>%
   pivot_longer(cols = c(Female, Male, Unknown)) %>%
   mutate(name = as.factor(name)) -> df_temp
-df_temp$name <- fct_relevel(df_temp$name, levels = c("Unknown", "Male", "Female")) 
+
+df_temp$name <- fct_relevel(df_temp$name, levels = c("Unknown", "Female", "Male")) 
+
+df_temp %>%
+  filter(name == 'Male') -> df_temp1
+  
 df_temp %>%
   # plot gender
   ggplot(aes(x = Year_Quarter, y = value)) +
   geom_col(aes(fill = name), color = "black") +
+  geom_errorbar(data = df_temp1, width = 0.5, 
+                aes(x = Year_Quarter, ymin = value - Male_SEM, ymax = value + Male_SEM)) +
   scale_fill_viridis(discrete = TRUE) +
   labs(
     title = "Male Participation at Community Meditation Has Steadily Increased",
     tag = "Figure 3",
     x = "Date (Year-Quarter)",
     y = "Percentage of Participants",
-    caption = "Each bar represents a quarterly average based on classes attended by the author",
+    caption = "Each bar represents a quarterly average based on classes attended by the author. \n 
+    Error bars represent mean ± standard error.",
     fill = "Gender") +
   theme_gray()
 ```
 
 * It is a well-known trend that community meditation classes attract more women than men
 
-```{r meditation_female_percent}
-free_meditation %>%
-  mutate(Female = Female_Participants / Participants_Include_Instructor * 100) -> df_temp
-value <- as.integer(mean(df_temp$Female), NA.omit = TRUE) 
+```{r meditation_male_percent}
+df_temp %>%
+  filter((Year_Quarter %in% c('2021-Q2', '2022-Q4')) & (name == 'Male')) %>%
+  pull(value) %>%
+  as.integer() -> values
 ```
-
 
 * Figure 3 suggests that the percentage of male participants has been steadily increasing over time
 
-* The overall percentage of female participants is still relatively high at `r value`%
+* The average percentage of male participants increased from `r values[1]`% to `r values[2]`% in 1.5 years
+
+```{r meditation_day_of_week}
+free_meditation %>%
+  # plot day of the week attendance
+  ggplot(aes(x = Day_Of_Week, y = Participants_Include_Instructor)) +
+  geom_boxplot(outlier.shape = NA, show.legend = FALSE) +
+  geom_jitter(aes(color = Day_Of_Week), width = 0.1, alpha = 0.8, show.legend = FALSE) +
+  scale_color_viridis(discrete = TRUE) +
+  theme(legend.position = "none") +
+  labs(
+    title = "Attendance at Community Meditation is Highest at Start of the Week",
+    tag = "Figure 4",
+    x = "Day of Week",
+    y = "Number of Participants Per Class",
+    caption = "Each jittered dot represents one class. Center line in boxplots represents the median.") +
+  theme_gray()
+```
+
+* Figure 4 indicates that community meditation attendance is highest on Mondays and lowest on Wednesdays
+
+* Days of the week with the highest attendance numbers are Mondays, Tuesdays and Fridays
+
+* Note that meditation classes take place at noon on Mondays, Wednesdays, Fridays; and at 5pm on Tuesdays and Thursdays
+
+```{r meditation_class_size}
+free_meditation %>%
+  filter(Participants_Include_Instructor >= 5) %>%
+  mutate(Class_Size = Participants_Include_Instructor,
+         Camera = Camera_On_Participants / Participants_Include_Instructor * 100,
+         Share = Sharing_Participants / Participants_Include_Instructor * 100,
+         Chat = Participants_Asking_Questions_Afterwards_Commenting_In_Chat / Participants_Include_Instructor * 100) %>%
+  pivot_longer(cols = c('Camera', 'Share', 'Chat')) %>%
+  # plot class_size vs. measures of engagement
+  ggplot(aes(x = Class_Size, y = value)) +
+  geom_jitter(aes(color = name), alpha = 0.8) +
+  geom_smooth(aes(color = name), method = "lm") +
+  scale_y_log10() +
+  scale_x_log10() +
+  scale_color_viridis(discrete = TRUE) +
+  labs(
+    title = "Smaller Class Size is Correlated with Greater Individual Engagement",
+    tag = "Figure 5",
+    x = "Class Size",
+    y = "Percentage of Participants",
+    caption = "Each jittered dot represents one class. \n 
+    Curve fits are based on linear models after log transformation.",
+    color = "Engagement Type") +
+  theme_gray()
+```
+
+* Figure 5 shows that smaller class sizes are correlated with higher percentages of participants taking part in some form of community engagement
+
+* The 3 forms of community engagement considered are: turning the camera on ("Camera"), commenting in the chat window or asking questions after class ("Chat"), and sharing their experience about the meditation practice ("Share")
+
+* This indicates that smaller group settings may encourage more active engagement by participants
+
+* Smaller classes may lead to a higher quality of meditation practice and greater community engagement
+
+

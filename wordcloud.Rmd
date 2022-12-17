@@ -1,0 +1,49 @@
+```{r}
+library(wordcloud)
+library(RColorBrewer)
+library(tm)
+library(googlesheets4)
+
+google_url <- "https://docs.google.com/spreadsheets/d/1RLOJXi2VQBOabrcT1qiLiyNO1k7eW8wm7E1Fze1NlRM/edit?usp=sharing"
+
+# get data
+df <- read_sheet(google_url) 
+
+print(df)
+topic <- data.frame(df$Topic)
+print(topic, quote=)
+topic <- df$Topic
+
+# create corpus
+df_topic <- Corpus(VectorSource(topic))
+inspect(df_topic)
+
+# clean up text
+toSpace = content_transformer(
+              function (x, pattern)
+              gsub(pattern, " ",x))
+df_topic1 <- tm_map(df_topic, content_transformer(tolower))
+df_topic2 <- tm_map(df_topic1, removePunctuation)
+df_topic3 <- tm_map(df_topic2, removeWords, stopwords())
+
+#term document matrix
+topic_dtm <- DocumentTermMatrix(df_topic3)
+inspect(topic_dtm)
+
+#create data frame
+word_frequency <- sort(colSums(as.matrix(topic_dtm)),
+                       decreasing=TRUE)
+df_frequency <- data.frame(word = names(word_frequency),
+                           freq=word_frequency)
+head(df_frequency)
+
+#wordcloud
+wordcloud(words = df_frequency$word, 
+          freq = df_frequency$freq,
+          min.freq = 1, 
+          max.words = 252,
+          random.order = FALSE, 
+          rot.per = 0.35, 
+          colors = brewer.pal(8, "Dark2"),
+          scale=c(3,.3))
+```

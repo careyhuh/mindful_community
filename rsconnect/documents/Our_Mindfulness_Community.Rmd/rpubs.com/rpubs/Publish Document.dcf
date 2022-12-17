@@ -1,0 +1,11 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/985142/314e2a37adbc42438ad8712fb0f63c01
+bundleId: https://api.rpubs.com/api/v1/document/985142/314e2a37adbc42438ad8712fb0f63c01
+url: http://rpubs.com/careyhuh/985142
+when: 1671269600.30883
+lastSyncTime: 1671269600.30885

@@ -119,7 +119,7 @@ df_temp3 %>%
     title = "Percentage meditation with camera on remains high",
     tag = "Figure 2",
     x = "Date (Year-Quarter)",
-    y = "Percentage of participants",
+    y = "Percent of participants with camera on",
     caption = "Each bar represents a quarterly average based on classes attended by the author.",
     fill = "Practice") +
   theme_gray()
@@ -343,7 +343,7 @@ Ms Drew de Paz, how fortunate we are to be offered the opportunity to learn how 
 
 #### Acknowledgement
 
-I would like to thank my fellow mindful meditators for sharing their stories. I am thankful for our talented instructors, Amy, Nicole and Cayce, for their heartful work in guiding us. I am also grateful for the timely help I received from Elsie Yi, who started her Masters in Public Health at UCI, in joining me in the final push to bring my passion project to fruition.
+I would like to thank my fellow mindful meditators for sharing their stories. I am thankful for our talented instructors, Amy, Nicole and Cayce, for their heartful work in guiding us. I am also grateful for the timely help I received from Elsie Yi, who started her Masters in Public Health at UCI, in the final push to bring this long-standing passion project of mine to fruition.
 
 #### Wednesday class pic with Nicole
 

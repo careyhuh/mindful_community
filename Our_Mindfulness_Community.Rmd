@@ -1,6 +1,6 @@
 ---
-title: "Our Mindfulness Community"
-subtitle: "A Passion Project"
+title: "Mindfulness Meditation Transforms Lives"
+subtitle: "Evidence-Based Findings & Testimonials from Our Mindfulness Communiity"
 author: "Carey Huh, Ph.D."
 date: "`r Sys.Date()`"
 output: html_document
@@ -26,25 +26,7 @@ google_url <- "https://docs.google.com/spreadsheets/d/1RLOJXi2VQBOabrcT1qiLiyNO1
 
 * Susan Samueli Integrative Health Institute has graciously offered UCI and the greater community daily opportunities to practice mindfulness for roughly two years
 
-* My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022
-
-* My mindfulness journey began with a free virtual Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic
-
-* Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for well-being classes
-
-* The pandemic years have been a difficult, and deeply isolating, time for many of us 
-
-* The community practices, albeit virtual, have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others
-
-* They certainly have been a lifesaver for my mental and physical well-being!
-
-* In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle
-
-* Consistent mindfulness practices and self-compassion teachings helped to completely transform my life!
-
-* I changed my career and became a data scientist working in the public health sector
-
-## Project Motivation
+* Consistent mindfulness practices have improved mental and physical well-being of community members and have transformed lives (please see **Testimonials** section below)
 
 * As a data scientist, I have been curious about how the mindfulness community has evolved over time 
  
@@ -56,7 +38,9 @@ google_url <- "https://docs.google.com/spreadsheets/d/1RLOJXi2VQBOabrcT1qiLiyNO1
 
 * Moreover, individual engagement during community meditation classes has always been relatively high despite virtual format
 
-* Surprisingly, the percentage of male participants has steadily increased over time, suggesting that our mindfulness community is evolving and increased participation from everyone is welcomed and encouraged
+* Data indicate that the mindfulness community is evolving; the percentage of male participants is steadily increasing
+
+* Small class sizes encourage active participation by community members
 
 ```{r import_data}
 df <- read_sheet(google_url) %>%
@@ -249,4 +233,10 @@ free_meditation %>%
 
 * Smaller classes may lead to a higher quality of meditation practice and greater community engagement
 
+
+## Testimonials
+
+### Carey Huh
+
+My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022. My mindfulness journey began with a free virtual Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic. Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for well-being classes. The pandemic years have been a difficult, and deeply isolating, time for many of us. The community practices, albeit virtual, have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others. They certainly have been a lifesaver for my mental and physical well-being! In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle. Consistent mindfulness practices and self-compassion teachings have helped to completely transform my life. I changed my career and became a data scientist working in the public health sector.
 

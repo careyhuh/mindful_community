@@ -17,7 +17,6 @@ library(lubridate)
 library(viridis)
 library(googlesheets4)
 library(wordcloud)
-library(wordcloud2)
 library(RColorBrewer)
 library(tm)
 
@@ -28,21 +27,23 @@ google_url <- "https://docs.google.com/spreadsheets/d/1RLOJXi2VQBOabrcT1qiLiyNO1
 
 * Susan Samueli Integrative Health Institute has graciously offered UCI and the greater community daily opportunities to practice mindfulness for roughly two years
 
-* Consistent mindfulness practices have improved mental and physical well-being of community members and have transformed lives (please see **Testimonials** section below)
+* A consistent mindfulness practice has improved mental and physical well-being of community members and have transformed lives (please see **Testimonials** section below)
 
 * As a data scientist, I have been curious about how the mindfulness community has evolved over time 
  
 * To gather data for this passion project, I have been monitoring attendance at SSIHI mindfulness community classes since April of 2021
 
-* This attendance data only contain aggregated summary statistics and anonymity of individual participants is strictly protected
+* The data only contain aggregated summary statistics and anonymity of individual participants is strictly protected
 
 * Using the data I have collected, I wanted to take the opportunity to show how the community has stayed consistent in number throughout the length of the program
 
-* Moreover, individual engagement during community meditation classes has always been relatively high despite the format being virtual meetings through Zoom
+* Moreover, individual engagement during community meditation has always been relatively high despite the format being virtual meetings through Zoom
 
 * Data indicate that the mindfulness community is evolving; the percentage of male participants has been steadily increasing
 
 * The small class size encourages active participation by community members
+
+* Finally, community members shared their thoughts on how the weekday mindfulness practice has positively impacted their lives
 
 ```{r import_data}
 df <- read_sheet(google_url) %>%
@@ -78,8 +79,9 @@ free_meditation %>%
   geom_col(aes(fill = as.factor(quarter(Date_Monday))), color = "black") +
   scale_fill_viridis(discrete = TRUE, direction = -1) +
   scale_x_date(date_breaks = "3 months", date_labels = "%Y-%b") +
+  scale_y_continuous(limits = c(0, 17)) +
   labs(
-    title = "Attendance at community Meditation has been consistent over time",
+    title = "Attendance at community meditation has been consistent over time",
     tag = "Figure 1",
     x = "Date (Year-Month)",
     y = "Number of participants per class",
@@ -88,9 +90,9 @@ free_meditation %>%
   theme_gray()
 ```
 
-* Figure 1 shows that the number of participants at community mediation classes has been consistent over time
+* Figure 1 shows that the number of participants at community meditation classes has been consistent over time
 
-* The spike in attendance during the summer of 2021 (2021-Q3) is most likely due to the employee well-being program that temporarily allowed participation from employees of other UC campuses
+* The spike in attendance during the summer of 2021 (2021-Q3) is most likely due to the pilot employee well-being program that temporarily allowed participation from employees of other UC campuses
 
 ```{r meditation_camera}
 free_meditation %>%
@@ -125,7 +127,7 @@ df_temp3 %>%
   theme_gray()
 ```
 
-* Whether a participant has their camera on during a virtual mediation class may indicate greater engagement, comfort and willingness to share 
+* Whether a participant has their camera on during a virtual meditation class may indicate greater engagement, comfort and willingness to share 
 
 ```{r camera_on_percent}
 free_meditation %>%
@@ -139,7 +141,7 @@ value2 <- as.integer(mean(df_temp1$On), NA.omit = TRUE)
 
 * Figure 2 shows that the percentage of participation with camera on has remained relatively stable across time
 
-* The average percentage of participation with camera on at community meditation classes is relatively high at `r value1`% 
+* On average, `r value1`% of participants turn their camera on during community meditation classes
 
 * This is much higher than the average percentage of participation with camera on at community yoga for well-being classes, which is at `r value2`% 
 
@@ -172,7 +174,7 @@ free_meditation %>%
 
 * Figure 3 shows that smaller class sizes are correlated with higher percentages of participants taking part in some form of community engagement
 
-* The 3 forms of community engagement considered are: turning the camera on ("Camera"), commenting in the chat window or asking questions after class ("Chat"), and sharing their experience about the meditation practice ("Share")
+* The three forms of community engagement considered are: turning the camera on ("Camera"), commenting in the chat window and/or asking questions after class ("Chat"), and sharing their experience about the meditation practice ("Share")
 
 * This indicates that smaller group settings may encourage more active engagement by participants
 
@@ -244,7 +246,7 @@ free_meditation %>%
     x = "",
     y = "Number of participants per class",
     caption = "Each jittered dot represents one class. Center line in boxplots represents the median.",
-    color = "Day Of Week") +
+    color = "Day of week") +
   theme_gray()
 ```
 
@@ -255,11 +257,23 @@ free_meditation %>%
 * Note that meditation classes take place at noon on Mondays, Wednesdays, Fridays; and at 5pm on Tuesdays and Thursdays
 
 
-### Topics most often discussed include body, meditation, compassion, breath, mindfulness and community
+### Topics discussed during community meditation
 
-```{r meditation_wordcloud_1}
+```{r meditation_by_instructors}
+free_meditation %>%
+  filter(Instructor %in% c("\"Amy Noelle\"", "\"Nicole Reilly\"", "\"Cayce Howe\"")) -> med_3_instructors
+med_3_instructors %>%
+  filter(Instructor == c("\"Amy Noelle\"")) -> Amy
+med_3_instructors %>%
+  filter(Instructor == c("\"Nicole Reilly\"")) -> Nicole
+med_3_instructors %>%
+  filter(Instructor == c("\"Cayce Howe\"")) -> Cayce
+```
+
+```{r amy_wordcloud, eval = FALSE}
+# Amy
 # create vector containing only text
-text <- free_meditation$Topic
+text <- Amy$Topic
 # create a corpus
 docs <- Corpus(VectorSource(text))
 # clean up text
@@ -279,25 +293,128 @@ set.seed(1234)
 wordcloud(words = df_freq$word, 
           freq = df_freq$freq,
           min.freq = 1, 
-          max.words = nrow(free_meditation),
+          max.words = nrow(df_freq),
           random.order = FALSE, 
-          rot.per = 0.35, 
+          rot.per = 0, 
+          colors = brewer.pal(3, "Dark2"),
+          scale = c(3,.3))
+```
+
+```{r nicole_wordcloud, eval = FALSE}
+# Nicole
+# create vector containing only text
+text <- Nicole$Topic
+# create a corpus
+docs <- Corpus(VectorSource(text))
+# clean up text
+docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) -> docs
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# create a document-term-matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing=TRUE) 
+df_freq <- data.frame(word = names(words), freq = words)
+# generate the word cloud
+wordcloud(words = df_freq$word, 
+          freq = df_freq$freq,
+          min.freq = 1, 
+          max.words = nrow(df_freq),
+          random.order = FALSE, 
+          rot.per = 0, 
+          colors = brewer.pal(3, "Dark2"),
+          scale = c(3,.3))
+```
+
+```{r cayce_wordcloud, eval = FALSE}
+# Cayce
+# create vector containing only text
+text <- Cayce$Topic
+# create a corpus
+docs <- Corpus(VectorSource(text))
+# clean up text
+docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) -> docs
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# create a document-term-matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing=TRUE) 
+df_freq <- data.frame(word = names(words), freq = words)
+# generate the word cloud
+wordcloud(words = df_freq$word, 
+          freq = df_freq$freq,
+          min.freq = 1, 
+          max.words = nrow(df_freq),
+          random.order = FALSE, 
+          rot.per = 0, 
+          colors = brewer.pal(3, "Dark2"),
+          scale = c(3,.3))
+```
+
+```{r all_wordcloud, eval = FALSE}
+# Amy
+# create vector containing only text
+text <- med_3_instructors$Topic
+# create a corpus
+docs <- Corpus(VectorSource(text))
+# clean up text
+docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) -> docs
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# create a document-term-matrix
+dtm <- TermDocumentMatrix(docs)
+matrix <- as.matrix(dtm)
+words <- sort(rowSums(matrix), decreasing=TRUE) 
+df_freq <- data.frame(word = names(words), freq = words)
+# generate the word cloud
+set.seed(1234)
+wordcloud(words = df_freq$word, 
+          freq = df_freq$freq,
+          min.freq = 1, 
+          max.words = nrow(df_freq),
+          random.order = FALSE, 
+          rot.per = 0, 
           colors = brewer.pal(8, "Dark2"),
           scale = c(3,.3))
 ```
 
-* The word cloud illustration shows the most commonly mentioned words in the topics discussed by instructors during community mindfulness meditations
+![](wordcloud_instructors.png)
+
+* The word cloud illustration shows words in daily topics discussed by each instructor during mindfulness meditations
+
+* The most commonly mentioned words appear in a larger font
+
+* Some topics are frequently discussed by all instructors, such as meditation, body scan, breath/breathing, awareness, and kindness
+
+* There are also many distinct topics discussed by each instructor, illustrating uniqueness of their teachings
+
+![](wordcloud_all.png)
+
+* Considering all three instructors' classes together, the mindfulness community benefits from a wide range of topics covered by the weekday meditation classes
 
 
 ### Testimonials
 
+
 #### From the Author
 
-My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022. My mindfulness journey began with a free virtual Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic. Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for well-being classes. The pandemic years have been a difficult, and deeply isolating, time for many of us. The community practices, albeit virtual, have provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others. They certainly have been a lifesaver for my mental and physical well-being! In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle. Consistent mindfulness practices and self-compassion teachings have helped to completely transform my life. I changed my career and became a data scientist working in the public health sector. Since my new job solely involves computer work, it has allowed me to work from home, which has enabled me to stay connected with the UCI mindfulness community that I have grown to cherish. I look forward to the guided practices, led by talented and engaging instructors, and seeing my fellow meditators as we sit, learn and share together. I work for the LA County Department of Public Health and they have started to offer Wednesday virtual mediation sits. I attended a few sessions but I found myself returning to this group as I find the mediation guidance at UCI SSIHI to be of a much higher quality. Last year around this time, a core group of around 8 of us got together and shared in the efforts to send a holiday gift to each of our meditation instructors. It is my hope that this report will serve to show how critical the mindfulness practices have been to so many of us and how these practices will continue to have sustained positive impacts on the lives of current and future members as the community evolves and grows stronger.
+My name is Carey Huh and I worked as a neuroscientist at UCI between 2017 and 2022. My mindfulness journey began with a free virtual Mindfulness Based Stress Reduction course offered by SSIHI in May 2020, at the start of the COVID-19 pandemic. Since then, I have been a regular practitioner at SSIHI's weekday community meditations and yoga for well-being classes. The pandemic years have been a difficult, and deeply isolating, time for many of us. The community practice, albeit virtual, has provided a much needed opportunity to pause, check in, be in the present, in a shared experience with others. They certainly have been a lifesaver for my mental and physical well-being! In April 2021, I participated in the 8-week Mindful Self-Compassion course offered by SSIHI, taught by Amy Noelle. A consistent mindfulness practice and self-compassion teachings have helped to completely transform my life. I changed my career and became a data scientist working in the public health sector. Since my new job solely involves computer work, it has allowed me to work from home, which has enabled me to stay connected with the UCI mindfulness community that I have grown to cherish. Every day, I look forward to the guided practice, led by talented and engaging instructors, and seeing my fellow meditators as we sit, learn and share together. I work for the LA County Department of Public Health and they have started to offer Wednesday virtual meditation sits. I attended a few sessions but I found myself returning to this group as I find the meditation guidance at UCI SSIHI to be of a much higher quality. Last year around this time, a core group of around 8 of us got together and shared in the efforts to send a holiday gift to each of our meditation instructors. It is my hope that this report will serve to show how critical the mindfulness practice has been to so many of us and how the practice will continue to have sustained positive impacts on the lives of current and future members as the community evolves and grows even stronger.
+
 
 #### Mindful Meditator 1
 
 The mindful meditation classes have enriched my life. I look forward to the meditations to calm my mind and nervous system. An added bonus, I also look forward to the wonderful community we have grown over the past couple of years. The instructors are top notch! Each brings a uniqueness and I always learn something new. 
+
 
 #### Mindful Meditator 2
 
@@ -309,9 +426,26 @@ I can honestly say these meditation classes saved my life. Meditation has helped
 
 They call these classes “practices”, which I thought was a little weird at first. But, now I realize that it really is a practice to learn how to be mindful throughout the day. Like anything in life, it takes a lot of practice to get good at something. The pandemic is slowly going away, but I’ve realized that the benefits of mindfulness meditation is continuing to provide benefits with not just my life, but also within my work at UCI. The lessons and learning from our “practices” is ongoing and I feel there’s still so much more to learn.  For the benefit of all UCI employees (especially the ones that haven’t started these classes yet) are among the best benefits an employee can have. I’m proud to work at UCI and an institution that prioritizes the mental health of its employees. Of all the employee benefits that I receive at UCI, meditation continues to have the most impact in bettering my life at home and work.  Please consider continuing these opportunities so others my also gain the many benefits of a meditation practice.  
 
+
 #### Mindful Meditator 3
 
 I am on my second year of a MSc in Neuroscience, and the current class/module is on the Mindfulness of Neuroscience and Application. I have been practicing on and off for years, but didn't know about this community and feel so blessed to have found it. Especially at this moment as I learn more about mindfulness' effects on the brain and mental health. I really hope there is a way to move forward with the free sessions.
+
+
+#### Mindful Meditator 4
+
+The mindfulness classes have taught me how important it is to take time each day to cultivate peace and equanimity. Through an ongoing practice, I know how to calm my mind and access a deeper place of kindness, wisdom and intuition. When my mind is calm, it helps me handle the daily stressors in life without getting hijacked by my emotions or the swirling thoughts in my head. When I am calm it is easier for the people around me to stay calm. Additionally, I so enjoy the community of like minded spirits. Their presence makes a difference in my life.
+
+
+#### Mindful Meditator 5
+
+Meditation has become my life thanks to all the passionate, mindful instructors. It is a real jewel to be able to have our zoom meetings every day, they have become imperative for my well-being. Please continue these ever so meaningful meetings for the future.
+
+
+#### Mindful Meditator 6
+
+Since summer 2020, SSIHI’s Mindfulness classes via zoom have helped me cope with the topsy-turvy of late. Learning the ancient practice of mindfulness with Amy, Nicole, and Cayce helps me be purposely self-aware and focused on the now. Through my SSIHI teachers, I’ve learned to be gentle and accepting of myself and others. Now in December 2022, the weekly zoom sessions continue to be The Key to reducing my stress and increasing my well-being. I have deep gratitude to SSIHI for generously helping me learn how to “breath”.  
+
 
 #### Roberto Moreno
 
@@ -327,23 +461,24 @@ I started the class just one year after losing my wife and in the midst of learn
 The frequent moments of quiet solitude and peaceful stillness; The ability to embrace and relish a given moment; Acquiring an acute awareness of my breathing, often times using it as an “anchor” from which to remain focused and grounded; Having the ability to focus on any one of my 5 sensory organs and listen to the information they continuously offer; Knowing I have choices available to me in response to the information I receive from my body; Sustaining meditation practice when life is going well, knowing it will help when it isn’t; Wrestling with the courage and challenge of accepting and embracing whatever life has in store for me; Having the ability to observe the ebb and flow of my ceaseless wandering thoughts, their tendency to ruminate and attach, and their propensity for critical judgement of self and others; Recognizing moments of fruitless frustration and finding the humor in their counterproductive nature; Fascinated with the manner in which thoughts effect emotion, and how emotions in turn effect bodily responses, all working in tandem; The frequent sense of spirituality encountered while meditating that leaves me afloat on a cloud; Recognizing that meditating with a group is more engaging and meaningful than doing so alone; Seeking a state of mindfulness and finding solace in situations that illicit annoyance, like being stuck in traffic; Finding myself living in a continuous state of gratitude; Struggling to find the words that adequately describe the essence of my being in any given moment; and, yes, remaining challenged with the ongoing change and uncertainty of life.  Strange, in spite of my advanced stage in life, I’m coming to like myself more, sleep better, think more clearly, am more attentive to self and others, and generally feel more welcoming and alive. That’s pretty wild!
 
 
-Ms Drew de Paz, how fortunate we are to be offered the opportunity to learn how to listen to our bodies, to be aware of how our minds work, and to arrive at an understanding of the interconnectivity of mind, body, and emotion, while not losing site of our human spirituality. This has to be the kind of outcome the Health Institute in general and your department in particular hopes to actualize. As such, I remain hopeful the Meditation and Mindfulness Class can somehow be continued. If not for the existing 5 days a week, perhaps we can meet for three. Do let us know if there is anything we can do to support this effort.
+Ms Drew de Paz, how fortunate we are to be offered the opportunity to learn how to listen to our bodies, to be aware of how our minds work, and to arrive at an understanding of the interconnectivity of mind, body, and emotion, while not losing sight of our human spirituality. This has to be the kind of outcome the Health Institute in general and your department in particular hopes to actualize. As such, I remain hopeful the Meditation and Mindfulness Class can somehow be continued. If not for the existing 5 days a week, perhaps we can meet for three. Do let us know if there is anything we can do to support this effort.
 
 
 ### Concluding remarks
 
-* Mindfulness practices such as the weekday community meditation classes provide UCI and the greater community an opportunity to develop critical skills to become more mindful, resilient, and compassionate to ourselves and others
+* A mindfulness practice, such as the weekday community meditation classes, provides UCI and the greater community an opportunity to develop critical skills to become more mindful, resilient, and compassionate to ourselves and others
 
 * Community members have been actively engaging during virtual meditation classes, by turning their cameras on, writing comments in the chat window, asking questions, and sharing their experiences with others
 
-* Small classes encourage more participants to interact with others during and after meditation practices
+* Small classes encourage more participants to interact with others during and after meditation practice
 
 * There has been a steady increase in the percentage of male participants, indicating a warm, inclusive and welcoming atmosphere of the community
 
 
 #### Acknowledgement
 
-I would like to thank my fellow mindful meditators for sharing their stories. I am thankful for our talented instructors, Amy, Nicole and Cayce, for their heartful work in guiding us. I am also grateful for the timely help I received from Elsie Yi, who started her Masters in Public Health at UCI, in the final push to bring this long-standing passion project of mine to fruition.
+I would like to thank my fellow mindful meditators for sharing their stories. I am thankful for our talented instructors, Amy, Nicole and Cayce, for their heartful work in guiding us, and for Elsie Yi (Masters in Public Health student at UCI) for her help in the final push to bring this long-standing passion project of mine to fruition. Finally, I'm grateful to UCI and the Susan Samueli Integrative Health Institute for providing the community with classes that have such a profound, long-lasting and widespread positive impact on our lives.
+
 
 #### Wednesday class pic with Nicole
 

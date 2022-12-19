@@ -67,6 +67,7 @@ other <- df %>%
   filter(!(Practice_Type %in% c("Meditation","Yoga")))
 ```
 
+\newpage
 
 ### Individuals participate actively during community meditations
 
@@ -93,6 +94,8 @@ free_meditation %>%
 * Figure 1 shows that the number of participants at community meditation classes has been consistent over time
 
 * The spike in attendance during the summer of 2021 (2021-Q3) is most likely due to the pilot employee well-being program that temporarily allowed participation from employees of other UC campuses
+
+\newpage
 
 ```{r meditation_camera}
 free_meditation %>%
@@ -145,6 +148,7 @@ value2 <- as.integer(mean(df_temp1$On), NA.omit = TRUE)
 
 * This is much higher than the average percentage of participation with camera on at community yoga for well-being classes, which is at `r value2`% 
 
+\newpage
 
 ```{r meditation_class_size}
 free_meditation %>%
@@ -180,6 +184,7 @@ free_meditation %>%
 
 * Smaller classes may lead to a higher quality of meditation practice and greater community engagement
 
+\newpage
 
 ### Attendance is influenced by factors such as participant's gender and day of the week
 
@@ -233,6 +238,8 @@ df_temp %>%
 
 * The average percentage of male participants increased from `r values[1]`% to `r values[2]`% in 1.5 years
 
+\newpage
+
 ```{r meditation_day_of_week}
 free_meditation %>%
   # plot day of the week attendance
@@ -256,6 +263,7 @@ free_meditation %>%
 
 * Note that meditation classes take place at noon on Mondays, Wednesdays, Fridays; and at 5pm on Tuesdays and Thursdays
 
+\newpage
 
 ### Topics discussed during community meditation
 
@@ -403,6 +411,7 @@ wordcloud(words = df_freq$word,
 * Considering all three instructors' classes together, the mindfulness community benefits from a wide range of topics covered by the weekday meditation classes
 
 
+
 ### Testimonials
 
 
@@ -432,22 +441,22 @@ They call these classes “practices”, which I thought was a little weird at f
 I am on my second year of a MSc in Neuroscience, and the current class/module is on the Mindfulness of Neuroscience and Application. I have been practicing on and off for years, but didn't know about this community and feel so blessed to have found it. Especially at this moment as I learn more about mindfulness' effects on the brain and mental health. I really hope there is a way to move forward with the free sessions.
 
 
-#### Mindful Meditator 4
+#### Theresa
 
 The mindfulness classes have taught me how important it is to take time each day to cultivate peace and equanimity. Through an ongoing practice, I know how to calm my mind and access a deeper place of kindness, wisdom and intuition. When my mind is calm, it helps me handle the daily stressors in life without getting hijacked by my emotions or the swirling thoughts in my head. When I am calm it is easier for the people around me to stay calm. Additionally, I so enjoy the community of like minded spirits. Their presence makes a difference in my life.
 
 
-#### Mindful Meditator 5
+#### Bettina
 
 Meditation has become my life thanks to all the passionate, mindful instructors. It is a real jewel to be able to have our zoom meetings every day, they have become imperative for my well-being. Please continue these ever so meaningful meetings for the future.
 
 
-#### Mindful Meditator 6
+#### Jan
 
 Since summer 2020, SSIHI’s Mindfulness classes via zoom have helped me cope with the topsy-turvy of late. Learning the ancient practice of mindfulness with Amy, Nicole, and Cayce helps me be purposely self-aware and focused on the now. Through my SSIHI teachers, I’ve learned to be gentle and accepting of myself and others. Now in December 2022, the weekly zoom sessions continue to be The Key to reducing my stress and increasing my well-being. I have deep gratitude to SSIHI for generously helping me learn how to “breath”.  
 
 
-#### Roberto Moreno
+#### Roberto
 
 Dear Ms Drew de Paz,
 
@@ -463,6 +472,8 @@ The frequent moments of quiet solitude and peaceful stillness; The ability to em
 
 Ms Drew de Paz, how fortunate we are to be offered the opportunity to learn how to listen to our bodies, to be aware of how our minds work, and to arrive at an understanding of the interconnectivity of mind, body, and emotion, while not losing sight of our human spirituality. This has to be the kind of outcome the Health Institute in general and your department in particular hopes to actualize. As such, I remain hopeful the Meditation and Mindfulness Class can somehow be continued. If not for the existing 5 days a week, perhaps we can meet for three. Do let us know if there is anything we can do to support this effort.
 
+\newpage
+
 
 ### Concluding remarks
 
@@ -472,18 +483,28 @@ Ms Drew de Paz, how fortunate we are to be offered the opportunity to learn how 
 
 * Small classes encourage more participants to interact with others during and after meditation practice
 
-* There has been a steady increase in the percentage of male participants, indicating a warm, inclusive and welcoming atmosphere of the community
+* There has been a steady increase in the percentage of male participants, indicating the the community is evolving and becoming a warm, inclusive and welcoming space for meditators from all walks of life
+
+* The community benefits from the diversity of voices from the three core instructors who bring different perspectives, teaching styles and topics of discussion
 
 
 #### Acknowledgement
 
 I would like to thank my fellow mindful meditators for sharing their stories. I am thankful for our talented instructors, Amy, Nicole and Cayce, for their heartful work in guiding us, and for Elsie Yi (Masters in Public Health student at UCI) for her help in the final push to bring this long-standing passion project of mine to fruition. Finally, I'm grateful to UCI and the Susan Samueli Integrative Health Institute for providing the community with classes that have such a profound, long-lasting and widespread positive impact on our lives.
 
+\newpage
+
+#### Monday class pic with Amy
+
+![](class_pic_mon.png)
 
 #### Wednesday class pic with Nicole
 
 ![](class_pic_wed.png)
 
+\newpage
+
 #### Friday class pic with Cayce
 
 ![](class_pic_fri.png)
+
